@@ -27,6 +27,9 @@ install(TARGETS compas-julia LIBRARY DESTINATION lib)
 # Link with toolkit
 target_link_libraries(compas-julia compas-toolkit)
 
+# Set library path for Julia bindings
+set(COMPAS_LIB_PATH "${PROJECT_SOURCE_DIR}/lib")
+
 # Configure local files
 configure_file(
     ${PROJECT_SOURCE_DIR}/src/Constants.jl.input

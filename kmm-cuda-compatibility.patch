@@ -1,0 +1,33 @@
+From: Oscar Heide
+Subject: [PATCH] Handle unsupported GPU attributes gracefully
+
+When querying GPU device attributes, some attributes may not be supported
+by older CUDA drivers. Instead of failing with CUDA_ERROR_INVALID_VALUE,
+gracefully handle this by setting unsupported attributes to 0.
+
+This allows KMM to work with CUDA 12.2 drivers when compiled with
+CUDA 12.4+ headers that define newer attributes.
+
+---
+ src/core/system_info.cpp | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
+
+diff --git a/src/core/system_info.cpp b/src/core/system_info.cpp
+index xxxx..yyyy 100644
+--- a/src/core/system_info.cpp
++++ b/src/core/system_info.cpp
+@@ -19,7 +19,12 @@ DeviceInfo::DeviceInfo(int device_id) {
+ 
+     for (size_t i = 1; i < NUM_ATTRIBUTES; i++) {
+         auto attr = GPUdevice_attribute(i);
+-        KMM_GPU_CHECK(gpuDeviceGetAttribute(&m_attributes[i], attr, m_device_id));
++        auto result = gpuDeviceGetAttribute(&m_attributes[i], attr, m_device_id);
++        // Handle cudaErrorInvalidValue gracefully for unsupported attributes
++        if (result == cudaErrorInvalidValue) {
++            m_attributes[i] = 0;  // Set unsupported attributes to 0
++            continue;
++        }
++        KMM_GPU_CHECK(result);
+     }
+ 
+     size_t ignore_free_memory;

@@ -1,7 +1,24 @@
 """
 This module provides a Julia interface to the COMPAS C++ library for simulating MRI sequences.
+
+# Important: CUDA library path setup
+Before using this module, you need to ensure CUDA libraries are accessible.
+You can do this in one of two ways:
+
+1. Set LD_LIBRARY_PATH before starting Julia:
+   ```
+   export LD_LIBRARY_PATH="/home/oheide/.pixi/envs/cuda-toolkit/lib:\$LD_LIBRARY_PATH"
+   julia
+   ```
+
+2. Or set it at the start of your Julia session before loading this module:
+   ```julia
+   ENV["LD_LIBRARY_PATH"] = "/home/oheide/.pixi/envs/cuda-toolkit/lib:" * get(ENV, "LD_LIBRARY_PATH", "")
+   # Then restart Julia
+   ```
 """
 module CompasToolkit
+
 include("Constants.jl")
 
 macro ccall_gcsafe(ex)
@@ -175,7 +192,7 @@ Base.size(array::CompasArray) = reverse(array.sizes)
 Base.getindex(array::CompasArray, i) = throw(ArgumentError("cannot index into a 'CompasArray', use 'collect' instead"))
 Base.unsafe_convert(::Type{Ptr{Cvoid}}, x::CompasArray) = x.ptr
 
-# 
+#
 Base.show(io::IO, ca::CompasArray) = print(io, typeof(ca), " of size ", size(ca))
 Base.show(io::IO, ::MIME"text/plain", ca::CompasArray) = print(io, ca)
 
