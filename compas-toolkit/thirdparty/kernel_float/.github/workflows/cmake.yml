@@ -1,0 +1,57 @@
+name: CMake
+
+on:
+  push:
+  pull_request:
+    branches: [ "main" ]
+
+env:
+  BUILD_TYPE: Debug
+
+jobs:
+  build-cuda:
+    uses: ./.github/workflows/cmake-run-cuda.yml
+    with:
+      cuda-version: "12.9.0"
+      cuda-architectures: 60-real;70-real;75-real;80-real;86-real
+
+  build-hip:
+    needs: build-cuda #  Only attempt HIP after CUDA was succesfull
+    uses: ./.github/workflows/cmake-run-hip.yml
+    with:
+      rocm-version: "6.4.0"
+
+  build-cuda-12-8:
+    if: github.ref_name == 'main'
+    needs: build-cuda
+    uses: ./.github/workflows/cmake-run-cuda.yml
+    with:
+      cuda-version: "12.8.0"
+
+  build-cuda-12-6:
+    if: github.ref_name == 'main'
+    needs: build-cuda
+    uses: ./.github/workflows/cmake-run-cuda.yml
+    with:
+      cuda-version: "12.6.0"
+
+  build-cuda-12-5:
+    if: github.ref_name == 'main'
+    needs: build-cuda
+    uses: ./.github/workflows/cmake-run-cuda.yml
+    with:
+      cuda-version: "12.5.0"
+
+  build-hip-6-2:
+    if: github.ref_name == 'main'
+    needs: build-hip
+    uses: ./.github/workflows/cmake-run-hip.yml
+    with:
+      rocm-version: "6.2.0"
+
+  build-hip-6-3:
+    if: github.ref_name == 'main'
+    needs: build-hip
+    uses: ./.github/workflows/cmake-run-hip.yml
+    with:
+      rocm-version: "6.3.0"
